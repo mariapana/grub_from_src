@@ -124,10 +124,6 @@ grub_multiboot2_load (grub_file_t file, const char *filename)
   mld.mbi_ver = 2;
   mld.relocatable = 0;
 
-
-  // volatile int bau = 0;
-  // while(!bau);
-
   mld.buffer = grub_malloc (MULTIBOOT_SEARCH);
   if (!mld.buffer)
     return grub_errno;
@@ -146,19 +142,17 @@ grub_multiboot2_load (grub_file_t file, const char *filename)
   if (header == 0)
     {
       grub_free (mld.buffer);
-      return grub_error (GRUB_ERR_BAD_ARGUMENT, "tdm tdm engine kaputt");
+      return grub_error (GRUB_ERR_BAD_ARGUMENT, "no multiboot header found");
     }
 
   COMPILE_TIME_ASSERT (MULTIBOOT_TAG_ALIGN % 4 == 0);
 
   keep_bs = 0;
 
-  // grub_printf("%s:%u  \n", __func__, __LINE__);
   for (tag = (struct multiboot_header_tag *) (header + 1);
        tag->type != MULTIBOOT_TAG_TYPE_END;
-       tag = (struct multiboot_header_tag *) ((grub_uint32_t *) tag + ALIGN_UP (tag->size, MULTIBOOT_TAG_ALIGN) / 4)) {
-      // grub_printf("type: %d   \n", tag->type);
-   switch (tag->type)
+       tag = (struct multiboot_header_tag *) ((grub_uint32_t *) tag + ALIGN_UP (tag->size, MULTIBOOT_TAG_ALIGN) / 4))
+    switch (tag->type)
       {
       case MULTIBOOT_HEADER_TAG_INFORMATION_REQUEST:
 	{
@@ -273,9 +267,6 @@ grub_multiboot2_load (grub_file_t file, const char *filename)
 	  }
 	break;
       }
-       }
-
-      // grub_printf("%s:%u  \n", __func__, __LINE__);
 
   if (addr_tag && !entry_specified && !(keep_bs && efi_entry_specified))
     {
@@ -365,10 +356,6 @@ grub_multiboot2_load (grub_file_t file, const char *filename)
 	  return err;
 	}
     }
-
-  grub_error (GRUB_ERR_BAD_OS,
-              "Reached func %s at line %u.\n",
-              __func__, __LINE__);
 
   load_base_addr = mld.load_base_addr;
 
@@ -726,24 +713,10 @@ grub_multiboot2_make_mbi (grub_uint32_t *target)
 
   COMPILE_TIME_ASSERT (MULTIBOOT_TAG_ALIGN % sizeof (grub_properly_aligned_t) == 0);
 
-struct grub_relocator
-{
-  struct grub_relocator_chunk *chunks;
-  grub_phys_addr_t postchunks;
-  grub_phys_addr_t highestaddr;
-  grub_phys_addr_t highestnonpostaddr;
-  grub_size_t relocators_size;
-};
-// Print relocator fields: postchunks, highestaddr, highestnonpostaddr, relocators_size
- //grub_printf("relocator fields: %u, %u, %u, %u\n", grub_multiboot2_relocator->postchunks, grub_multiboot2_relocator->highestaddr, grub_multiboot2_relocator->highestnonpostaddr, grub_multiboot2_relocator->relocators_size);
-  grub_printf("RIGHT BEFORE CHUNCK ALIGN\n");
-
   err = grub_relocator_alloc_chunk_align (grub_multiboot2_relocator, &ch,
 					  MBI_MIN_ADDR, UP_TO_TOP32 (bufsize),
 					  bufsize, MULTIBOOT_TAG_ALIGN,
 					  GRUB_RELOCATOR_PREFERENCE_NONE, 1);
-
-  grub_printf("RIGHT AFTER CHUNCK ALIGN\n");
   if (err)
     return err;
 

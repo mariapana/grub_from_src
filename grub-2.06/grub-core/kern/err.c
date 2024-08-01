@@ -21,7 +21,6 @@
 #include <grub/misc.h>
 #include <stdarg.h>
 #include <grub/i18n.h>
-// #include <string.h>
 
 #define GRUB_ERROR_STACK_SIZE	10
 
@@ -37,13 +36,6 @@ static int grub_error_stack_assert;
 grub_err_t
 grub_error (grub_err_t n, const char *fmt, ...)
 {
-  // grub_printf("%p    \n", &grub_error);
-  // volatile int bp = 0, bp2 = 0;
-  // while (!bp && n != GRUB_ERR_OUT_OF_MEMORY) { // breakpoint on this error only
-  //   if (bp2)  // set this in GDB to break out of the loop and return to caller
-  //       return n;
-  // }
-
   va_list ap;
 
   grub_errno = n;
